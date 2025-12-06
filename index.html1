@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Chaser - Симулятор Вейпинга</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(103, 58, 183, 0.5);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #9c27b0;
+            text-shadow: 0 0 10px rgba(156, 39, 176, 0.5);
+        }
+        
+        .subtitle {
+            color: #aaa;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .warning {
+            color: #ff9800;
+            font-size: 0.9rem;
+            background: rgba(255, 152, 0, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .vape-device {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .device-visual {
+            height: 250px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .vape-tank {
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(to bottom, #37474f, #263238);
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            border: 3px solid #455a64;
+            z-index: 2;
+            overflow: hidden;
+        }
+        
+        .e-liquid {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #9c27b0, #673ab7);
+            transition: height 0.5s;
+            border-radius: 0 0 7px 7px;
+        }
+        
+        .vape-mod {
+            width: 100px;
+            height: 180px;
+            background: linear-gradient(to bottom, #212121, #424242);
+            border-radius: 20px;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mod-screen {
+            width: 70px;
+            height: 40px;
+            background: #0a0a0a;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            color: #00e676;
+            border: 1px solid #333;
+            font-size: 0.9rem;
+        }
+        
+        .fire-button {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #f44336, #c62828);
+            border-radius: 50%;
+            margin-top: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .fire-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.7);
+        }
+        
+        .fire-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+        }
+        
+        .vapor-container {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 200px;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 3;
+        }
+        
+        .vapor {
+            position: absolute;
+            bottom: 80px;
+            width: 30px;
+            height: 0;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            filter: blur(10px);
+            opacity: 0;
+            transition: all 0.5s;
+        }
+        
+        .vapor.active {
+            height: 120px;
+            opacity: 0.9;
+            animation: vapor-rise 3s forwards;
+        }
+        
+        @keyframes vapor-rise {
+            0% {
+                bottom: 80px;
+                width: 30px;
+                opacity: 0.9;
+            }
+            50% {
+                width: 80px;
+                opacity: 0.6;
+            }
+            100% {
+                bottom: 250px;
+                width: 120px;
+                opacity: 0;
+            }
+        }
+        
+        .stats-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #9c27b0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(156, 39, 176, 0.3);
+        }
+        
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .stat-name {
+            font-weight: bold;
+            color: #aaa;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .stat-value.low {
+            color: #ff9800;
+        }
+        
+        .stat-value.critical {
+            color: #f44336;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+        
+        .progress-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .liquid-progress {
+            background: linear-gradient(to right, #9c27b0, #673ab7);
+        }
+        
+        .battery-progress {
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+        }
+        
+        .coil-progress {
+            background: linear-gradient(to right, #ff9800, #ff5722);
+        }
+        
+        .actions-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .action-btn {
+            padding: 12px;
+            background: linear-gradient(to right, #673ab7, #512da8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .action-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(103, 58, 183, 0.4);
+        }
+        
+        .action-btn:disabled {
+            background: linear-gradient(to right, #666, #444);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .action-btn.refill {
+            background: linear-gradient(to right, #9c27b0, #7b1fa2);
+        }
+        
+        .action-btn.charge {
+            background: linear-gradient(to right, #4CAF50, #388e3c);
+        }
+        
+        .action-btn.coil {
+            background: linear-gradient(to right, #ff9800, #f57c00);
+        }
+        
+        .achievements {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .achievement {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .achievement.unlocked {
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .achievement-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #aaa;
+        }
+        
+        .achievement.unlocked .achievement-icon {
+            color: #ffd700;
+        }
+        
+        .achievement-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .achievement-desc {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .game-log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            color: #9c27b0;
+            margin-right: 10px;
+        }
+        
+        .controls-info {
+            text-align: center;
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .vape-device, .stats-panel {
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Анимация облака при облачных трюках */
+        .cloud-trick {
+            position: absolute;
+            width: 100px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            filter: blur(20px);
+            opacity: 0;
+            z-index: 10;
+        }
+        
+        .cloud-trick.active {
+            animation: cloud-expand 3s forwards;
+        }
+        
+        @keyframes cloud-expand {
+            0% {
+                width: 100px;
+                height: 60px;
+                opacity: 0.9;
+            }
+            100% {
+                width: 300px;
+                height: 150px;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cloud"></i> Cloud Chaser</h1>
+            <p class="subtitle">Симулятор вейпинга: управляйте устройством, следите за статистикой и выполняйте трюки!</p>
+            <div class="warning">
+                <i class="fas fa-exclamation-triangle"></i> 
+                ВНИМАНИЕ: Данная игра является симулятором и не пропагандирует курение. Вейпинг может быть вреден для здоровья.
+            </div>
+        </header>
+        
+        <div class="game-area">
+            <div class="vape-device">
+                <h2 class="panel-title">Ваше устройство</h2>
+                
+                <div class="device-visual">
+                    <div class="vapor-container" id="vaporContainer">
+                        <!-- Пар будет добавляться через JS -->
+                    </div>
+                    
+                    <div class="vape-tank">
+                        <div class="e-liquid" id="eLiquid" style="height: 80%;"></div>
+                    </div>
+                    
+                    <div class="vape-mod">
+                        <div class="mod-screen">
+                            <div id="wattage">40W</div>
+                            <div id="resistance">0.3Ω</div>
+                        </div>
+                        
+                        <div class="fire-button" id="fireButton">
+                            <i class="fas fa-power-off"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="controls-info">
+                    Нажмите кнопку или клавишу ПРОБЕЛ для затяжки
+                </div>
+            </div>
+            
+            <div class="stats-panel">
+                <h2 class="panel-title">Статистика</h2>
+                
+                <div class="stat">
+                    <div class="stat-name">Жидкость:</div>
+                    <div class="stat-value" id="liquidValue">80%</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill liquid-progress" id="liquidProgress" style="width: 80%;"></div>
+                    <div class="progress-label" id="liquidLabel">80%</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-name">Заряд батареи:</div>
+                    <div class="stat-value" id="batteryValue">65%</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill battery-progress" id="batteryProgress" style="width: 65%;"></div>
+                    <div class="progress-label" id="batteryLabel">65%</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-name">Износ испарителя:</div>
+                    <div class="stat-value" id="coilValue">30%</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill coil-progress" id="coilProgress" style="width: 30%;"></div>
+                    <div class="progress-label" id="coilLabel">30%</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-name">Всего затяжек:</div>
+                    <div class="stat-value" id="puffCount">0</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-name">Облачные трюки:</div>
+                    <div class="stat-value" id="trickCount">0</div>
+                </div>
+                
+                <div class="stat">
+                    <div class="stat-name">Деньги:</div>
+                    <div class="stat-value" id="moneyValue">100₽</div>
+                </div>
+                
+                <div class="actions-panel">
+                    <button class="action-btn refill" id="refillBtn">
+                        <i class="fas fa-fill-drip"></i> Заправить (20₽)
+                    </button>
+                    <button class="action-btn charge" id="chargeBtn">
+                        <i class="fas fa-battery-full"></i> Зарядить (10₽)
+                    </button>
+                    <button class="action-btn coil" id="coilBtn">
+                        <i class="fas fa-fire"></i> Заменить испаритель (50₽)
+                    </button>
+                    <button class="action-btn" id="trickBtn" disabled>
+                        <i class="fas fa-cloud"></i> Облачный трюк
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="achievements">
+            <h2 class="panel-title">Достижения</h2>
+            <div class="achievements-grid" id="achievementsGrid">
+                <!-- Достижения будут добавлены через JS -->
+            </div>
+        </div>
+        
+        <div class="game-log">
+            <h2 class="panel-title">Журнал событий</h2>
+            <div id="gameLog">
+                <!-- События будут добавляться через JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Игровые переменные
+        let gameState = {
+            liquid: 80,
+            battery: 65,
+            coilWear: 30,
+            puffCount: 0,
+            trickCount: 0,
+            money: 100,
+            wattage: 40,
+            resistance: 0.3,
+            canDoTrick: false,
+            isCharging: false,
+            isRefilling: false
+        };
+        
+        // Достижения
+        const achievements = [
+            { id: 1, name: "Первая затяжка", desc: "Сделайте первую затяжку", icon: "🚬", unlocked: false },
+            { id: 2, name: "Облачный мастер", desc: "Выполните 10 облачных трюков", icon: "☁️", unlocked: false },
+            { id: 3, name: "Экономист", desc: "Накопите 500 рублей", icon: "💰", unlocked: false },
+            { id: 4, name: "Вейпер-профи", desc: "Сделайте 100 затяжек", icon: "👑", unlocked: false },
+            { id: 5, name: "Техник", desc: "Замените испаритель 5 раз", icon: "🔧", unlocked: false },
+            { id: 6, name: "Энерджайзер", desc: "Полностью зарядите устройство 10 раз", icon: "⚡", unlocked: false }
+        ];
+        
+        // Элементы DOM
+        const fireButton = document.getElementById('fireButton');
+        const vaporContainer = document.getElementById('vaporContainer');
+        const eLiquid = document.getElementById('eLiquid');
+        const liquidValue = document.getElementById('liquidValue');
+        const liquidProgress = document.getElementById('liquidProgress');
+        const liquidLabel = document.getElementById('liquidLabel');
+        const batteryValue = document.getElementById('batteryValue');
+        const batteryProgress = document.getElementById('batteryProgress');
+        const batteryLabel = document.getElementById('batteryLabel');
+        const coilValue = document.getElementById('coilValue');
+        const coilProgress = document.getElementById('coilProgress');
+        const coilLabel = document.getElementById('coilLabel');
+        const puffCount = document.getElementById('puffCount');
+        const trickCount = document.getElementById('trickCount');
+        const moneyValue = document.getElementById('moneyValue');
+        const wattageElement = document.getElementById('wattage');
+        const resistanceElement = document.getElementById('resistance');
+        const refillBtn = document.getElementById('refillBtn');
+        const chargeBtn = document.getElementById('chargeBtn');
+        const coilBtn = document.getElementById('coilBtn');
+        const trickBtn = document.getElementById('trickBtn');
+        const gameLog = document.getElementById('gameLog');
+        const achievementsGrid = document.getElementById('achievementsGrid');
+        
+        // Инициализация игры
+        function initGame() {
+            updateUI();
+            renderAchievements();
+            addLogEntry("Добро пожаловать в Cloud Chaser! Нажмите кнопку питания для затяжки.");
+            
+            // Назначаем обработчики событий
+            fireButton.addEventListener('click', takePuff);
+            refillBtn.addEventListener('click', refillLiquid);
+            chargeBtn.addEventListener('click', chargeBattery);
+            coilBtn.addEventListener('click', replaceCoil);
+            trickBtn.addEventListener('click', performCloudTrick);
+            
+            // Обработка нажатия клавиши пробела для затяжки
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    takePuff();
+                }
+            });
+        }
+        
+        // Обновление интерфейса
+        function updateUI() {
+            // Обновляем значения
+            liquidValue.textContent = `${gameState.liquid}%`;
+            liquidProgress.style.width = `${gameState.liquid}%`;
+            liquidLabel.textContent = `${gameState.liquid}%`;
+            
+            batteryValue.textContent = `${gameState.battery}%`;
+            batteryProgress.style.width = `${gameState.battery}%`;
+            batteryLabel.textContent = `${gameState.battery}%`;
+            
+            coilValue.textContent = `${gameState.coilWear}%`;
+            coilProgress.style.width = `${gameState.coilWear}%`;
+            coilLabel.textContent = `${gameState.coilWear}%`;
+            
+            puffCount.textContent = gameState.puffCount;
+            trickCount.textContent = gameState.trickCount;
+            moneyValue.textContent = `${gameState.money}₽`;
+            
+            wattageElement.textContent = `${gameState.wattage}W`;
+            resistanceElement.textContent = `${gameState.resistance}Ω`;
+            
+            // Обновляем визуализацию жидкости
+            eLiquid.style.height = `${gameState.liquid}%`;
+            
+            // Обновляем цвета значений
+            updateValueColors();
+            
+            // Проверяем, можно ли выполнить трюк
+            gameState.canDoTrick = gameState.liquid > 40 && gameState.battery > 50 && gameState.coilWear < 70;
+            trickBtn.disabled = !gameState.canDoTrick;
+            
+            // Проверяем достижения
+            checkAchievements();
+        }
+        
+        // Обновление цветов значений в зависимости от уровня
+        function updateValueColors() {
+            // Жидкость
+            if (gameState.liquid > 40) {
+                liquidValue.className = "stat-value";
+            } else if (gameState.liquid > 20) {
+                liquidValue.className = "stat-value low";
+            } else {
+                liquidValue.className = "stat-value critical";
+            }
+            
+            // Батарея
+            if (gameState.battery > 40) {
+                batteryValue.className = "stat-value";
+            } else if (gameState.battery > 20) {
+                batteryValue.className = "stat-value low";
+            } else {
+                batteryValue.className = "stat-value critical";
+            }
+            
+            // Испаритель
+            if (gameState.coilWear < 60) {
+                coilValue.className = "stat-value";
+            } else if (gameState.coilWear < 80) {
+                coilValue.className = "stat-value low";
+            } else {
+                coilValue.className = "stat-value critical";
+            }
+        }
+        
+        // Затяжка
+        function takePuff() {
+            // Проверяем, можно ли сделать затяжку
+            if (gameState.liquid <= 0) {
+                addLogEntry("Не могу сделать затяжку: закончилась жидкость!");
+                return;
+            }
+            
+            if (gameState.battery <= 0) {
+                addLogEntry("Не могу сделать затяжку: разряжена батарея!");
+                return;
+            }
+            
+            if (gameState.coilWear >= 100) {
+                addLogEntry("Не могу сделать затяжку: испаритель изношен!");
+                return;
+            }
+            
+            // Уменьшаем ресурсы
+            gameState.liquid = Math.max(0, gameState.liquid - 3);
+            gameState.battery = Math.max(0, gameState.battery - 2);
+            gameState.coilWear = Math.min(100, gameState.coilWear + 1);
+            gameState.puffCount++;
+            
+            // Добавляем анимацию пара
+            createVapor();
+            
+            // Случайное изменение мощности (для реалистичности)
+            gameState.wattage = 38 + Math.floor(Math.random() * 6);
+            
+            // Добавляем запись в лог
+            addLogEntry(`Затяжка #${gameState.puffCount}. Мощность: ${gameState.wattage}W`);
+            
+            // Обновляем интерфейс
+            updateUI();
+            
+            // Проверяем первое достижение
+            if (gameState.puffCount === 1) {
+                unlockAchievement(1);
+            }
+        }
+        
+        // Создание анимации пара
+        function createVapor() {
+            const vapor = document.createElement('div');
+            vapor.className = 'vapor';
+            
+            // Случайное положение
+            const leftPosition = 40 + Math.random() * 20;
+            vapor.style.left = `${leftPosition}%`;
+            
+            vaporContainer.appendChild(vapor);
+            
+            // Активируем анимацию
+            setTimeout(() => {
+                vapor.classList.add('active');
+            }, 10);
+            
+            // Удаляем элемент после анимации
+            setTimeout(() => {
+                vapor.remove();
+            }, 3000);
+        }
+        
+        // Заправка жидкости
+        function refillLiquid() {
+            if (gameState.money < 20) {
+                addLogEntry("Недостаточно денег для заправки!");
+                return;
+            }
+            
+            if (gameState.liquid >= 100) {
+                addLogEntry("Бак уже полный!");
+                return;
+            }
+            
+            gameState.isRefilling = true;
+            refillBtn.disabled = true;
+            refillBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Заправка...';
+            
+            // Анимация заправки
+            addLogEntry("Начинаю заправку...");
+            
+            setTimeout(() => {
+                gameState.liquid = 100;
+                gameState.money -= 20;
+                gameState.isRefilling = false;
+                
+                addLogEntry("Бак полностью заправлен!");
+                updateUI();
+                
+                refillBtn.disabled = false;
+                refillBtn.innerHTML = '<i class="fas fa-fill-drip"></i> Заправить (20₽)';
+            }, 1500);
+        }
+        
+        // Зарядка батареи
+        function chargeBattery() {
+            if (gameState.money < 10) {
+                addLogEntry("Недостаточно денег для зарядки!");
+                return;
+            }
+            
+            if (gameState.battery >= 100) {
+                addLogEntry("Батарея уже заряжена!");
+                return;
+            }
+            
+            gameState.isCharging = true;
+            chargeBtn.disabled = true;
+            chargeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Зарядка...';
+            
+            // Анимация зарядки
+            addLogEntry("Начинаю зарядку батареи...");
+            
+            setTimeout(() => {
+                gameState.battery = 100;
+                gameState.money -= 10;
+                gameState.isCharging = false;
+                
+                addLogEntry("Батарея полностью заряжена!");
+                updateUI();
+                
+                chargeBtn.disabled = false;
+                chargeBtn.innerHTML = '<i class="fas fa-battery-full"></i> Зарядить (10₽)';
+                
+                // Проверяем достижение по зарядке
+                checkChargingAchievement();
+            }, 2000);
+        }
+        
+        // Замена испарителя
+        function replaceCoil() {
+            if (gameState.money < 50) {
+                addLogEntry("Недостаточно денег для замены испарителя!");
+                return;
+            }
+            
+            if (gameState.coilWear <= 10) {
+                addLogEntry("Испаритель еще почти новый!");
+                return;
+            }
+            
+            addLogEntry("Заменяю испаритель...");
+            
+            setTimeout(() => {
+                gameState.coilWear = 0;
+                gameState.money -= 50;
+                
+                // Случайное сопротивление нового испарителя
+                const resistances = [0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8];
+                gameState.resistance = resistances[Math.floor(Math.random() * resistances.length)];
+                
+                addLogEntry(`Испаритель заменен! Новое сопротивление: ${gameState.resistance}Ω`);
+                updateUI();
+                
+                // Проверяем достижение по замене испарителей
+                checkCoilAchievement();
+            }, 1000);
+        }
+        
+        // Выполнение облачного трюка
+        function performCloudTrick() {
+            if (!gameState.canDoTrick) {
+                addLogEntry("Не могу выполнить трюк: проверьте уровень жидкости, заряд батареи и износ испарителя!");
+                return;
+            }
+            
+            // Тратим ресурсы на трюк
+            gameState.liquid = Math.max(0, gameState.liquid - 15);
+            gameState.battery = Math.max(0, gameState.battery - 10);
+            gameState.coilWear = Math.min(100, gameState.coilWear + 5);
+            gameState.trickCount++;
+            
+            // Создаем большое облако
+            createCloudTrick();
+            
+            // Добавляем деньги за выполнение трюка
+            const trickReward = 5 + Math.floor(Math.random() * 15);
+            gameState.money += trickReward;
+            
+            addLogEntry(`Облачный трюк #${gameState.trickCount} выполнен! Получено: ${trickReward}₽`);
+            updateUI();
+            
+            // Проверяем достижение по трюкам
+            if (gameState.trickCount === 10) {
+                unlockAchievement(2);
+            }
+        }
+        
+        // Создание анимации облачного трюка
+        function createCloudTrick() {
+            const cloud = document.createElement('div');
+            cloud.className = 'cloud-trick';
+            
+            // Позиционируем облако
+            cloud.style.left = '50%';
+            cloud.style.top = '50%';
+            cloud.style.transform = 'translate(-50%, -50%)';
+            
+            vaporContainer.appendChild(cloud);
+            
+            // Активируем анимацию
+            setTimeout(() => {
+                cloud.classList.add('active');
+            }, 10);
+            
+            // Удаляем элемент после анимации
+            setTimeout(() => {
+                cloud.remove();
+            }, 3000);
+        }
+        
+        // Добавление записи в лог
+        function addLogEntry(message) {
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span class="log-time">[${timeString}]</span> ${message}`;
+            
+            gameLog.prepend(logEntry);
+            
+            // Ограничиваем количество записей
+            if (gameLog.children.length > 10) {
+                gameLog.removeChild(gameLog.lastChild);
+            }
+        }
+        
+        // Отображение достижений
+        function renderAchievements() {
+            achievementsGrid.innerHTML = '';
+            
+            achievements.forEach(achievement => {
+                const achievementElement = document.createElement('div');
+                achievementElement.className = `achievement ${achievement.unlocked ? 'unlocked' : ''}`;
+                
+                achievementElement.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-desc">${achievement.desc}</div>
+                `;
+                
+                achievementsGrid.appendChild(achievementElement);
+            });
+        }
+        
+        // Проверка достижений
+        function checkAchievements() {
+            // Достижение "Экономист"
+            if (gameState.money >= 500 && !achievements[2].unlocked) {
+                unlockAchievement(3);
+            }
+            
+            // Достижение "Вейпер-профи"
+            if (gameState.puffCount >= 100 && !achievements[3].unlocked) {
+                unlockAchievement(4);
+            }
+        }
+        
+        // Проверка достижения по зарядке
+        let chargeCount = 0;
+        function checkChargingAchievement() {
+            chargeCount++;
+            if (chargeCount >= 10 && !achievements[5].unlocked) {
+                unlockAchievement(6);
+            }
+        }
+        
+        // Проверка достижения по замене испарителей
+        let coilReplaceCount = 0;
+        function checkCoilAchievement() {
+            coilReplaceCount++;
+            if (coilReplaceCount >= 5 && !achievements[4].unlocked) {
+                unlockAchievement(5);
+            }
+        }
+        
+        // Разблокировка достижения
+        function unlockAchievement(achievementId) {
+            const index = achievementId - 1;
+            if (index >= 0 && index < achievements.length && !achievements[index].unlocked) {
+                achievements[index].unlocked = true;
+                addLogEntry(`Достижение разблокировано: "${achievements[index].name}"`);
+                renderAchievements();
+            }
+        }
+        
+        // Автоматическое уменьшение заряда со временем
+        function autoDrain() {
+            // Батарея медленно разряжается со временем
+            if (gameState.battery > 0 && !gameState.isCharging) {
+                gameState.battery = Math.max(0, gameState.battery - 0.1);
+            }
+            
+            // Испаритель медленно изнашивается со временем
+            if (gameState.coilWear < 100) {
+                gameState.coilWear = Math.min(100, gameState.coilWear + 0.05);
+            }
+            
+            updateUI();
+        }
+        
+        // Инициализация игры при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            initGame();
+            
+            // Запускаем автоматическое уменьшение ресурсов
+            setInterval(autoDrain, 5000);
+        });
+    </script>
+</body>
+</html>
